@@ -169,3 +169,9 @@ cython_debug/
 # Drivers
 *.zip
 *.exe
+
+# Logging Files
+*.txt
+
+# Data
+*.json

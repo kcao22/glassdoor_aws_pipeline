@@ -14,7 +14,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 
 # Parser to get config credentials and other private information
 parser = configparser.ConfigParser()
-parser.read_file(open('../credentials.config'))
+parser.read_file(open(r'D:\Documents\Data Projects\glassdoor_aws_pipeline\credentials.config'))
 
 # Selenium variables
 selenium_driver_path = parser.get('SELENIUM', 'path')
@@ -132,7 +132,7 @@ def collect_all_data(test: bool, url: str = 'https://www.glassdoor.com/Job/unite
     '''
     # Set selenium driver path
     all_jobs = []
-    with webdriver.Edge('../SeleniumDrivers/msedgedriver.exe') as driver:
+    with webdriver.Edge(r'D:\Documents\Data Projects\glassdoor_aws_pipeline\SeleniumDrivers\msedgedriver.exe') as driver:
         # Open Glasdoor page
         driver.get(url)
         driver.maximize_window()
