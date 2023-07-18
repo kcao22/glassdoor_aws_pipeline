@@ -1,5 +1,7 @@
 import boto3
 import awswrangler as wr
+import datetime
+import numpy as np
 from urllib.parse import unquote_plus
 
 # Execute lambda_handler function when triggered
@@ -28,8 +30,9 @@ def lambda_handler(event, context):
     print(f'Key: {key}')
     print(f'Landing DB Name: {landing_db_name}')
     print(f'Clean DB Name: {clean_db_name}')
-    print(f'Table Name: {raw_table_name}')
-    
+    print(f'Raw Table Name: {raw_table_name}')
+    print(f'Clean Table Name: {clean_table_name}')
+
     # Specify landing bucket and target bucket (clean)
     input_path = f's3://{bucket}/{key}'
     print(f'Input_Path: {input_path}')
@@ -37,10 +40,164 @@ def lambda_handler(event, context):
     print(f'Output_Path: {output_path}')
     
     # Read JSON file from S3 bucket.
+    # Perform lightweight data quality checks and transformations
     # Filter out null rows. Typically jobs without identifiable company names, job titles, and locations will have nulls for almost all other fields.
+    # Add date column
+    # Data type checks and nulling values not in valid values. Removing whitespaces.
     input_df = wr.s3.read_json([input_path])
-    input_df = input_df.dropna(subset=['CompanyName', 'JobTitle', 'JobLocation'], thresh=2)
+    input_df['Date'] = datetime.date(int(raw_table_name[4:][0:4]), int(raw_table_name[4:][4:6]), int(raw_table_name[4:][6:8])).strftime('%m-%d-%Y')
+    input_df = input_df.dropna(subset=['CompanyName'], thresh=1)
+    input_df = input_df.dropna(subset=['JobTitle', 'JobLocation'], thresh=2)
+    input_df['CompanyYearFounded'] = input_df['CompanyYearFounded'].apply(lambda x: x if x and x.isdigit() else np.nan)
+    for col in input_df.columns.to_list():
+        input_df[col] = input_df[col].apply(lambda x: x.strip() if isinstance(x, str) else x)
+    input_df = input_df.fillna(np.nan)
+    unique_values = {
+    'CompanySize' : {
+        'Unknown',
+        '1 to 50 Employees',
+        '51 to 200 Employees',
+        '201 to 500 Employees',
+        '501 to 1000 Employees',
+        '1001 to 5000 Employees',
+        '5001 to 10000 Employees',
+        '10000+ Employees'
+    },
+    'CompanyType' : {
+        'Unknown',
+        'Company - Private',
+        'Company - Public',
+        'Other'
+    },
+    'CompanySector' : {
+        'Unknown',
+        'Aerospace & Defense',
+        'Agriculture',
+        'Arts, Entertainment & Recreation',
+        'Construction, Repair & Maintenance Services',
+        'Education',
+        'Energy, Mining & Utilities',
+        'Financial Services',
+        'Government & Public Administration',
+        'Healthcare',
+        'Hotels & Travel Accommodation',
+        'Human Resources & Staffing',
+        'Information Technology',
+        'Insurance',
+        'Legal',
+        'Management & Consulting',
+        'Manufacturing',
+        'Media & Communication',
+        'Nonprofit & NGO',
+        'Personal Consumer Services',
+        'Pharmaceutical & Biotechnology',
+        'Real Estate',
+        'Restaurants & Food Service',
+        'Retail & Wholesale',
+        'Telecommunications',
+        'Transportation & Logistics'
+    },
+    'CompanyRevenue' : {
+        'Unknown',
+        'Less than $1 million (USD)',
+        '$1 to $5 million (USD)',
+        '$5 to $25 million (USD)',
+        '$25 to $100 million (USD)',
+        '$100 to $500 million (USD)',
+        '$500 million to $1 billion (USD)',
+        '$1 to $5 billion (USD)',
+        '$5 to $10 billion (USD)',
+        '$10+ billion (USD)'
+    },
+    'CompanyIndustry' : {
+        'Unknown',
+        'Aerospace & Defense',
+        'Farm Support',
+        'Crop Production',
+        'Culture & Entertainment',
+        'Sports & Recreation',
+        'Architectural & Engineering Services',
+        'Construction',
+        'Colleges & Universities',
+        'Education & Training Services',
+        'Primary & Secondary Schools',
+        'Energy & Utilities',
+        'Accounting & Tax',
+        'Banking & Lending',
+        'Financial Transaction Processing',
+        'Stock Exchanges',
+        'Investment & Asset Management',
+        'National Agencies',
+        'Municipal Agencies',
+        'Health Care Services & Hospitals',
+        'Hotels & Resorts',
+        'Travel Agencies',
+        'HR Consulting',
+        'Computer Hardware Development',
+        'Enterprise Software & Network Solutions',
+        'Internet & Web Services',
+        'Information Technology Support Services',
+        'Insurance Agencies & Brokerages',
+        'Insurance Carriers',
+        'Building & Personnel Services',
+        'Business Consulting',
+        'Membership Organizations',
+        'Research & Development',
+        'Security & Protective',
+        'Chemical Manufacturing',
+        'Electronics Manufacturing',
+        'Food & Beverage Manufacturing',
+        'Health Care Products Manufacturing',
+        'Machinery Manufacturing',
+        'Transportation Equipment Manufacturing',
+        'Consumer Product Manufacturing',
+        'Advertising & Public Relations',
+        'Film Production',
+        'Publishing',
+        'Broadcast Media',
+        'Video Game Publishing',
+        'Grantmaking & Charitable Foundations',
+        'Religious Institutions',
+        'Civic & Social Services',
+        'Consumer Product Rental',
+        'Beauty & Wellness',
+        'Biotech & Pharmaceuticals',
+        'Real Estate',
+        'Catering & Food Service Contractors',
+        'Restaurants & Cafes',
+        'Office Supply & Copy Stores',
+        'Wholesale',
+        'Automotive Parts & Accessories Stores',
+        'Beauty & Personal Accessories Stores',
+        'Consumer Electronics & Appliances Stores',
+        'Department, Clothing & Shoe Stores',
+        'Drug & Health Stores',
+        'Food & Beverage Stores',
+        'General Merchandise & Superstores',
+        'Home Furniture & Housewares Stores',
+        'Other Retail Stores',
+        'Pet & Pet Supplies Stores',
+        'Sporting Goods Stores',
+        'Toy & Hobby Stores',
+        'Vehicle Dealers',
+        'Grocery Stores',
+        'Cable, Internet & Telephone Providers',
+        'Telecommunications Services',
+        'Rail Transportation',
+        'Shipping & Trucking',
+        'Car & Truck Rental',
+        'Airlines, Airports & Air Transportation',
+        'Taxi & Car Services'
+        }
+    }
+    for val in ['Unknown', 'Unknown / Non-Applicable']:
+        input_df = input_df.replace(val, np.nan)
     
+    for col in ['CompanySize', 'CompanyType', 'CompanySector', 'CompanyIndustry', 'CompanyRevenue']:
+        input_df[col] = input_df[col].apply(lambda x: x if x in unique_values[col] else np.nan)
+
+
+    # Establish databases and tables
     current_databases = wr.catalog.databases()
     wr.catalog.databases()
     for name in [landing_db_name, clean_db_name]:
@@ -50,15 +207,43 @@ def lambda_handler(event, context):
         else:
             print(f'- Database {name} already exists')
     
-    result = wr.s3.to_parquet(
+    # Catalog raw data (metadata only)
+    raw_result = wr.catalog.create_json_table(
+            path=input_path,
+            database=landing_db_name,
+            table=raw_table_name,
+            columns_types={
+                        'companyname':'string',
+                        'jobtitle':	'string',
+                        'joblocation':'string',
+                        'easyapply': 'string',
+                        'jobdescription':'string',
+                        'jobsalary':'string',
+                        'companyrating':'double',
+                        'companysize':'string',
+                        'companytype':'string',
+                        'companysector':'string',
+                        'companyyearfounded':'bigint',
+                        'companyindustry':'string',
+                        'companyrevenue':'string',
+                    },
+            mode='overwrite'
+        )
+    
+    print("RAW RESULT: ")
+    print(f'{raw_result}')
+    
+    # Place data validated file into DB and table in clean bucket
+    clean_result = wr.s3.to_parquet(
         df=input_df,
         path=output_path,
         dataset=True,
         database=clean_db_name,
         table=clean_table_name,
-        mode="append")
+        mode="overwrite")
         
-    print("RESULT: ")
-    print(f'{result}')
+    print("CLEAN RESULT: ")
+    print(f'{clean_result}')
     
-    return result
+    return clean_result
+

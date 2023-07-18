@@ -78,7 +78,7 @@ def get_all_values_dict(driver, test=False):
     params = {
         'CompanyName': ['css-87uc0g', 'Company Name', 'class'],
         # 'CompanyName': ['//*[@class="css-8wag7x"]', 'Company Name', 'xpath'],
-        'JobTitle': ['//*[@class="job-title mt-xsm"]', 'Job Name', 'xpath'],
+        'JobTitle': ['//*[@id="JDCol"]/div/article/div/div[1]/div/div/div[1]/div[3]/div[1]/div[2]', 'Job Name', 'xpath'],
         'JobLocation': ['css-56kyx5', 'Job Location', 'class'],
         # 'JobLocation': ['//*[@class="location mt-xxsm"]', 'Job Location', 'xpath'],
         'EasyApply': ['//*[@id="MainCol"]/div[1]/ul/li[3]/div/div/a/div[1]/div[5]/div', 'Easy Apply', 'xpath'],
