@@ -148,6 +148,7 @@ def collect_all_data(test: bool, url: str = 'https://www.glassdoor.com/Job/unite
                 test = False
                 time.sleep(1)
                 job.click()
+                time.sleep(2)
                 exit_prompt(driver)
                 try:
                     job_info = get_all_values_dict(driver, True)
