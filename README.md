@@ -1,8 +1,8 @@
 # Glassdoor Webscraping End-to-End AWS Pipeline
-Full pipeline process:
+**Full pipeline process**:
 ![Alt Text](https://github.com/kcao22/glassdoor_aws_pipeline/blob/main/Data%20Modeling/KCPipeline.png)
 
-Demo of serving layer PowerBI Dashboard:
+**Demo of serving layer PowerBI Dashboard**:
 ![Alt Text](https://github.com/kcao22/glassdoor_aws_pipeline/blob/main/ReadMe%20Images/glassdoor_job_posts_dashboard.gif)
 
 ## Credits
