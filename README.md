@@ -62,4 +62,7 @@
 ## Serving
  1. PowerBI is used to connect with the Redshift warehouse. Because data is refreshed daily to the warehouse, PowerBI can be refreshed on the dashboard level. With a Pro license or a Premium License, PowerBI workspaces can be accessed and dataflows may be created alongside scheduled refresh intervals to automatically refresh the dashboard.
  2. End product includes summarized data on companies posting jobs, job requirements and salaries over time, as well as an interactive filterable list of job postings based on skillsets described in job descriptions.
+ 3. The data model loaded into warehouse and reflected in the PowerBI model is modeled in a STAR schema format. This allows for historical data loading with dimensional slicing and PowerBI's VertiPaq engine to efficiently compress the fact table for low latency performances.
+    ![image](https://github.com/kcao22/glassdoor_aws_pipeline/assets/76795831/359721ab-33a4-4608-8d38-946d1e388569)
+
 
