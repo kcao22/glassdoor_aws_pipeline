@@ -1,0 +1,104 @@
+// Use DBML to define your database structure
+// Docs: https://dbml.dbdiagram.io/docs
+
+Table dimCities {
+    citykey SMALLINT [PRIMARY KEY]
+    cityname VARCHAR(16)
+    stateabbrev VARCHAR(15)
+    statename VARCHAR(20)
+    statefips SMALLINT
+    lat DOUBLE
+    lon DOUBLE
+    city_pop2019 BIGINT
+}
+
+Table dimStates {
+    statekey SMALLINT [PRIMARY KEY]
+    statename VARCHAR(20)
+    stateabbrev VARCHAR(15)
+    state_pop2019 BIGINT
+}
+
+Table dimSize {
+  sizekey SMALLINT [PRIMARY KEY]
+  size VARCHAR(23)
+}
+
+Table dimType {
+    typekey SMALLINT [PRIMARY KEY]
+    type VARCHAR(15)
+}
+
+Table dimRevenue {
+    revenuekey SMALLINT [PRIMARY KEY]
+    revenue VARCHAR(32)
+}
+
+TABLE dimSector {
+    sectorkey SMALLINT [PRIMARY KEY]
+    sector VARCHAR(32)
+}
+
+TABLE dimIndustry {
+    industrykey SMALLINT [PRIMARY KEY]
+    industry VARCHAR(40)
+}
+
+TABLE dimEducation {
+    educationkey SMALLINT [PRIMARY KEY]
+    education VARCHAR(15)
+}
+
+TABLE dimExperience {
+    experiencekey SMALLINT [PRIMARY KEY]
+    experience VARCHAR(15)
+}
+
+TABLE dimDate {
+  date DATE [PRIMARY KEY]
+}
+
+TABLE fact {
+    date VARCHAR(30) 
+    companyname VARCHAR(MAX)
+    companyrating DOUBLE
+    revenuekey SMALLINT
+    sectorkey SMALLINT 
+    industrykey SMALLINT
+    sizekey SMALLINT
+    typekey SMALLINT
+    educationkey SMALLINT
+    experiencekey SMALLINT
+    companyyearfounded SMALLINT
+    companyage SMALLINT
+    easyapply VARCHAR(MAX)
+    citykey SMALLINT
+    statekey SMALLINT
+    minsalary DOUBLE
+    maxsalary DOUBLE 
+    averagesalary DOUBLE
+    stream SMALLINT
+    sql SMALLINT
+    gcp SMALLINT
+    scala SMALLINT
+    dbt SMALLINT
+    java  SMALLINT
+    azure SMALLINT
+    aws SMALLINT
+    batch SMALLINT
+    spark SMALLINT
+    python SMALLINT
+    airflow SMALLINT
+}
+
+Ref: fact.date > dimDate.date
+Ref: fact.citykey > dimCities.citykey 
+Ref: fact.statekey > dimStates.statekey
+Ref: fact.sectorkey  > dimSector.sectorkey
+Ref: fact.industrykey  > dimIndustry.industrykey
+Ref: fact.typekey  > dimType.typekey
+Ref: fact.sizekey  > dimSize.sizekey
+Ref: fact.revenuekey > dimRevenue.revenuekey
+Ref: fact.educationkey > dimEducation.educationkey
+Ref: fact.experiencekey > dimExperience.experiencekey
+// many-to-one
